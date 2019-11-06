@@ -199,16 +199,19 @@ class Index
         $osign = md5($orderId.$key['vvalue']);
 
 
-        $key = Db::name("setting")->where("vkey","vmq")->find();
+        $key = Db::name("setting")->where("vkey","vmqkey")->find();
         $sz = explode("/",$key['vvalue']);
-        $sign = md5($orderId.$osign.$paytype.$price.$sz[1]);
+        $sign = md5($orderId.$osign.$paytype.$price.$sz[0]);
 
         $http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
         $payReturn = $http_type.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
         $payReturn = str_replace("buy","payReturn",$payReturn);
 
-        $p = "payId=".$orderId.'&param='.$osign.'&type='.$paytype."&price=".$price.'&sign='.$sign.'&isHtml=1'."&payReturn=".$payReturn;
-        $url = "http://".$sz[0]."/createOrder?".$p;
+        // $p = "payId=".$orderId.'&param='.$osign.'&type='.$paytype."&price=".$price.'&sign='.$sign.'&isHtml=1'."&payReturn=".$payReturn;
+        $p = "payId=".$orderId.'&param='.$osign.'&type='.$paytype."&price=".$price.'&sign='.$sign.'&isHtml=1'."&returnUrl=".$payReturn;
+	$key = Db::name("setting")->where("vkey","vmq")->find();
+        $sz = explode("/",$key['vvalue']);
+	$url = "http://".$sz[0]."/createOrder?".$p;
 
         return $this->getReturn(1,"成功",$url);
     }
@@ -216,9 +219,9 @@ class Index
 
     private function checkPay(){
         ini_set("error_reporting","E_ALL & ~E_NOTICE");
-        $key = Db::name("setting")->where("vkey","vmq")->find();
+        $key = Db::name("setting")->where("vkey","vmqkey")->find();
         $sz = explode("/",$key['vvalue']);
-        $key = $sz[1];//通讯密钥
+        $key = $sz[0];//通讯密钥
         $payId = $_GET['payId'];//商户订单号
         $param = $_GET['param'];//创建订单的时候传入的参数
         $type = $_GET['type'];//支付方式 ：微信支付为1 支付宝支付为2
@@ -259,7 +262,7 @@ class Index
                     ->limit($order['num'])
                     ->update(array(
                         "orderid"=>$order['id'],
-                        "state"=>0,
+			"state"=>1,//0:卡密为一次性，1:卡密持续有效
                     ));
 
                 $cards = Db::name("cards")->where("orderid",$order['id'])->select();
