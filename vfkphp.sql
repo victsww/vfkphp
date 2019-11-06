@@ -75,6 +75,7 @@ CREATE TABLE `setting` (
 INSERT INTO `setting` (`vkey`, `vvalue`) VALUES
 ('gg', '<p><b>v发卡，开源发卡系统！</b></p>'),
 ('vmq', ''),
+('vmqkey', '此处输入通讯密钥'),
 ('name', 'v 发卡'),
 ('user', 'admin'),
 ('pass', 'admin');
